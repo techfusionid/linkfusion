@@ -47,3 +47,6 @@ drizzle/**/meta/
 
 # Claude
 .claude/plans/
+
+# Prototype reference (not for production)
+/prototype-ref
