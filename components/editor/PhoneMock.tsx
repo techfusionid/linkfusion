@@ -21,7 +21,7 @@ export default function PhoneMock({ children, className }: PhoneMockProps) {
       className={`relative inline-block w-full align-middle leading-none ${className || ''}`}
       style={{
         aspectRatio: `${PHONE_WIDTH}/${PHONE_HEIGHT}`,
-        width: '320px',
+        width: '360px',
         maxWidth: '100%',
       }}
     >

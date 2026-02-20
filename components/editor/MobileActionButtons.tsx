@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Share, QrCode, X, Check } from 'lucide-react';
+import { Copy, QrCode, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface QRDialogProps {
@@ -12,7 +12,6 @@ interface QRDialogProps {
 function QRDialog({ isOpen, onClose }: QRDialogProps) {
   if (!isOpen) return null;
 
-  // Mock QR code for now - will replace with qrcode.react
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
       <div className="bg-card border rounded-2xl p-6 shadow-elevated max-w-sm w-full mx-4">
@@ -29,7 +28,6 @@ function QRDialog({ isOpen, onClose }: QRDialogProps) {
           {/* Mock QR code */}
           <div className="w-48 h-48 bg-white border-2 border-border rounded-lg flex items-center justify-center">
             <div className="grid grid-cols-5 gap-1 w-40 h-40">
-              {/* Simple QR pattern mock */}
               {Array.from({ length: 25 }).map((_, i) => (
                 <div
                   key={i}
@@ -59,103 +57,57 @@ function QRDialog({ isOpen, onClose }: QRDialogProps) {
   );
 }
 
-interface ShareDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-function ShareDialog({ isOpen, onClose }: ShareDialogProps) {
-  const [copied, setCopied] = useState(false);
-
-  if (!isOpen) return null;
-
-  const handleCopyLink = () => {
-    // Mock URL - will use actual page URL later
-    navigator.clipboard.writeText('https://linkfusion.dev/username');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
-      <div className="bg-card border rounded-2xl p-6 shadow-elevated max-w-sm w-full mx-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Share</h3>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-md hover:bg-secondary"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="flex flex-col gap-2">
-          <Button
-            variant="outline"
-            className="w-full justify-start"
-            onClick={handleCopyLink}
-          >
-            {copied ? (
-              <>
-                <Check className="w-4 h-4 mr-2 text-positive" />
-                Link copied!
-              </>
-            ) : (
-              <>
-                <Share className="w-4 h-4 mr-2" />
-                Copy link
-              </>
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full justify-start"
-            onClick={() => {
-              // TODO: Share to X/Twitter
-              window.open('https://twitter.com/intent/tweet?text=Check+out+my+LinkFusion+page!', '_blank');
-            }}
-          >
-            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-            </svg>
-            Share to X
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 interface MobileActionButtonsProps {
   username?: string;
 }
 
 export default function MobileActionButtons({ username = 'username' }: MobileActionButtonsProps) {
   const [qrOpen, setQrOpen] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`https://linkfusion.app/${username}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <>
-      <div className="flex flex-col gap-3">
-        {/* Share Button */}
-        <button
-          onClick={() => setShareOpen(true)}
-          className="w-12 h-12 rounded-full bg-card border border-border shadow-elevated flex items-center justify-center hover:bg-secondary transition-colors"
-          title="Share"
-        >
-          <Share className="w-5 h-5" />
-        </button>
+      <div className="flex flex-col gap-4 w-48">
+        {/* Header */}
+        <div className="text-center">
+          <h3 className="text-xl font-bold text-foreground">Share your link</h3>
+          <p className="text-sm text-muted-foreground mt-1">linkfusion.app/{username}</p>
+        </div>
 
-        {/* QR Button */}
-        <button
-          onClick={() => setQrOpen(true)}
-          className="w-12 h-12 rounded-full bg-card border border-border shadow-elevated flex items-center justify-center hover:bg-secondary transition-colors"
-          title="QR Code"
-        >
-          <QrCode className="w-5 h-5" />
-        </button>
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <button
+            onClick={handleCopy}
+            className="flex-1 h-14 rounded-xl bg-primary text-primary-foreground shadow-elevated flex items-center justify-center gap-2 hover:bg-primary/90 transition-all font-medium relative overflow-hidden"
+          >
+            {copied ? (
+              <>
+                <Check className="w-5 h-5" />
+                <span>Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-5 h-5" />
+                <span>Copy</span>
+              </>
+            )}
+          </button>
+          <button
+            onClick={() => setQrOpen(true)}
+            className="flex-1 h-14 rounded-xl bg-card border border-border shadow-elevated flex items-center justify-center gap-2 hover:bg-secondary transition-all font-medium"
+          >
+            <QrCode className="w-5 h-5" />
+            <span>QR</span>
+          </button>
+        </div>
       </div>
 
-      <ShareDialog isOpen={shareOpen} onClose={() => setShareOpen(false)} />
       <QRDialog isOpen={qrOpen} onClose={() => setQrOpen(false)} />
     </>
   );
