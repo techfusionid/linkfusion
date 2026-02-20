@@ -79,8 +79,8 @@
 
 /* React Grid Layout */
 .react-grid-item.react-grid-placeholder {
-  background: rgba(30, 41, 59, 0.15) !important;
-  border: 2px dashed rgba(30, 41, 59, 0.4) !important;
+  background: #ecedf8 !important;
+  border: none !important;
   border-radius: 0.75rem !important;
   opacity: 1 !important;
 }
@@ -99,5 +99,17 @@
 
 .react-grid-item.react-draggable-dragging {
   z-index: 100;
-  opacity: 0.9;
+  opacity: 0.95;
+  cursor: grabbing;
+  box-shadow: 0 20px 40px -10px rgba(136, 115, 246, 0.3), 0 0 0 1px rgba(136, 115, 246, 0.1);
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
