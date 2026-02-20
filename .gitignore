@@ -50,3 +50,4 @@ drizzle/**/meta/
 
 # Prototype reference (not for production)
 /prototype-ref
+own-prompt/
