@@ -28,12 +28,12 @@ function EditorNavbar() {
 }
 
 function EditorCanvas() {
-  const { previewMode, theme, selectBlock, showBanner, profile, layoutPreset } = useEditor();
+  const { previewMode, theme, selectBlock, showBanner, profile, layoutPreset, darkMode } = useEditor();
   const patternStyle = getPatternStyle(theme.pattern, theme.bgColor);
   const isBento = layoutPreset === 'bento';
 
   return (
-    <div className="flex flex-col min-h-screen w-full">
+    <div className={`flex flex-col min-h-screen w-full transition-colors ${darkMode ? 'dark' : ''}`}>
       <EditorNavbar />
 
       <div
