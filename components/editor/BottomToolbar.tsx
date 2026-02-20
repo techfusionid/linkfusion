@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { useEditor, BlockType, LayoutPreset } from '@/app/editor/context';
 import {
-  Smartphone, Monitor, Palette, Plus, Link2, Type, ImagePlus, Heading1, X, User,
+  Smartphone, Monitor, Palette, Plus, Link2, Type, ImagePlus, Heading1, X, User, UserX, Sun, Moon, Pencil,
 } from 'lucide-react';
 
 const BG_PRESETS_LIGHT = [
@@ -13,15 +13,35 @@ const BG_PRESETS_LIGHT = [
   { label: 'Lavender', value: '#f5f3ff' },
   { label: 'Rose', value: '#fff1f2' },
   { label: 'Sky', value: '#f0f9ff' },
+  { label: 'Peach', value: '#ffedd5' },
+  { label: 'Coral', value: '#fee2e2' },
+  { label: 'Indigo', value: '#e0e7ff' },
+  { label: 'Teal', value: '#ccfbf1' },
+  { label: 'Yellow', value: '#fef9c3' },
+  { label: 'Amber', value: '#fef3c7' },
+  { label: 'Pink', value: '#fce7f3' },
+  { label: 'Purple', value: '#f3e8ff' },
+  { label: 'Lime', value: '#ecfccb' },
+  { label: 'Gray', value: '#f1f5f9' },
 ];
 
 const BG_PRESETS_DARK = [
   { label: 'Charcoal', value: '#1a1a2e' },
   { label: 'Navy', value: '#0f172a' },
   { label: 'Slate', value: '#1e293b' },
-  { label: 'Ink', value: '#171717' },
+  { label: 'Ink', value: '#0a0a0a' },
   { label: 'Deep Purple', value: '#1e1b2e' },
   { label: 'Forest', value: '#0f1f1a' },
+  { label: 'Maroon', value: '#1c1917' },
+  { label: 'Midnight', value: '#020617' },
+  { label: 'Zinc', value: '#18181b' },
+  { label: 'Stone', value: '#292524' },
+  { label: 'Neutral', value: '#171717' },
+  { label: 'Crimson', value: '#271c19' },
+  { label: 'Violet', value: '#1e1b4e' },
+  { label: 'Fuchsia', value: '#2a1a2e' },
+  { label: 'Emerald', value: '#022c22' },
+  { label: 'Cyan', value: '#083344' },
 ];
 
 const PATTERNS: Array<{ value: 'none' | 'dots' | 'grid' | 'lines'; label: string }> = [
@@ -41,30 +61,101 @@ const ADD_BLOCK_OPTIONS: { type: BlockType; icon: typeof Plus; label: string }[]
 export default function BottomToolbar() {
   const {
     previewMode, setPreviewMode,
-    theme, updateTheme, addBlock, profile, layoutPreset, setLayoutPreset, showBanner, setShowBanner,
+    theme, updateTheme, addBlock, profile, layoutPreset, setLayoutPreset, showBanner, setShowBanner, darkMode, setDarkMode,
   } = useEditor();
 
   const [showTheme, setShowTheme] = useState(false);
   const [showAddBlock, setShowAddBlock] = useState(false);
-  const [colorMode, setColorMode] = useState<'light' | 'dark'>('light');
   const colorInputRef = useRef<HTMLInputElement>(null);
 
-  const bgPresets = colorMode === 'light' ? BG_PRESETS_LIGHT : BG_PRESETS_DARK;
+  const bgPresets = darkMode ? BG_PRESETS_DARK : BG_PRESETS_LIGHT;
+  const isCustomColor = !bgPresets.some(p => p.value === theme.bgColor);
 
   return (
     <>
       {/* Theme Popover */}
       {showTheme && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-[340px] bg-card border rounded-2xl p-5 shadow-elevated animate-in slide-in-from-bottom-2 fade-in duration-200">
-          <div className="flex items-center justify-between mb-4">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-[360px] bg-card border rounded-2xl p-5 shadow-elevated animate-in slide-in-from-bottom-2 fade-in duration-200">
+          <div className="flex items-center justify-between mb-5">
             <span className="text-sm font-semibold text-foreground">Customize</span>
             <button onClick={() => setShowTheme(false)} className="p-1 rounded-md hover:bg-secondary">
               <X className="w-4 h-4 text-muted-foreground" />
             </button>
           </div>
 
+          {/* Top Row: Banner Toggle | Divider | Theme Switcher */}
+          <div className="flex items-center justify-between gap-3 mb-5">
+            {/* Banner Toggle */}
+            <div className="flex flex-col items-center gap-1.5">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Banner</span>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => setShowBanner(true)}
+                  className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    showBanner
+                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/30 scale-105'
+                      : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:scale-105'
+                  }`}
+                  title="Show banner"
+                >
+                  <User className="w-3.5 h-3.5" />
+                  {showBanner && (
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/20 to-transparent" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowBanner(false)}
+                  className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    !showBanner
+                      ? 'bg-destructive text-destructive-foreground shadow-md shadow-destructive/30 scale-105'
+                      : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:scale-105'
+                  }`}
+                  title="Hide banner"
+                >
+                  <UserX className="w-3.5 h-3.5" />
+                  {!showBanner && (
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/20 to-transparent" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="flex-1 h-px bg-border/40" />
+
+            {/* Theme Switcher */}
+            <div className="flex flex-col items-center gap-1.5">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Theme</span>
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 overflow-hidden shrink-0 ${
+                  darkMode
+                    ? 'bg-slate-900 text-yellow-400 shadow-md shadow-slate-900/50 scale-105'
+                    : 'bg-amber-100 text-amber-600 shadow-md shadow-amber-200/50 scale-105'
+                }`}
+                title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+              >
+                {/* Animated background glow */}
+                <div className={`absolute inset-0 transition-opacity duration-500 ${darkMode ? 'opacity-100' : 'opacity-0'}`}>
+                  <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/30 via-purple-500/30 to-pink-500/30" />
+                </div>
+                <div className={`absolute inset-0 transition-opacity duration-500 ${darkMode ? 'opacity-0' : 'opacity-100'}`}>
+                  <div className="absolute inset-0 bg-gradient-to-tr from-amber-300/50 via-orange-300/50 to-yellow-300/50" />
+                </div>
+
+                {/* Icon */}
+                <div className="relative z-10">
+                  {darkMode ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+                </div>
+
+                {/* Shine effect */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/40 via-transparent to-transparent pointer-events-none" />
+              </button>
+            </div>
+          </div>
+
           {/* Layout Preset */}
-          <div className="mb-4">
+          <div className="mb-5">
             <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">Layout</label>
             <div className="flex gap-2">
               {([
@@ -87,46 +178,35 @@ export default function BottomToolbar() {
             </div>
           </div>
 
-          {/* Colors */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-muted-foreground uppercase tracking-wider">Colors</label>
-              <div className="flex bg-secondary rounded-lg p-0.5">
-                <button
-                  onClick={() => setColorMode('light')}
-                  className={`px-2 py-0.5 text-[10px] rounded-md font-medium transition-colors ${colorMode === 'light' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
-                >
-                  Light
-                </button>
-                <button
-                  onClick={() => setColorMode('dark')}
-                  className={`px-2 py-0.5 text-[10px] rounded-md font-medium transition-colors ${colorMode === 'dark' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
-                >
-                  Dark
-                </button>
-              </div>
-            </div>
-            <div className="flex gap-2 items-center">
+          {/* Colors - 8x2 grid */}
+          <div className="mb-5">
+            <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">Background</label>
+            <div className="grid grid-cols-8 gap-2">
               {bgPresets.map(preset => (
                 <button
                   key={preset.value}
                   onClick={() => updateTheme({ bgColor: preset.value })}
-                  className={`w-9 h-9 rounded-full border-2 transition-all hover:scale-110 ${
-                    theme.bgColor === preset.value ? 'border-foreground scale-110' : 'border-border'
+                  className={`aspect-square rounded-full border-2 transition-all hover:scale-110 relative overflow-hidden ${
+                    theme.bgColor === preset.value ? 'border-foreground scale-105' : 'border-border'
                   }`}
                   style={{ backgroundColor: preset.value }}
                   title={preset.label}
-                />
+                >
+                  {/* Subtle sheen overlay */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 to-transparent pointer-events-none" />
+                </button>
               ))}
               {/* Custom color picker */}
               <button
                 onClick={() => colorInputRef.current?.click()}
-                className="w-9 h-9 rounded-full border-2 border-border hover:border-foreground/40 transition-all hover:scale-110 overflow-hidden relative"
-                style={{
-                  background: 'conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)',
-                }}
+                className="aspect-square rounded-full border-2 border-border hover:border-foreground/40 transition-all hover:scale-110 relative overflow-hidden"
                 title="Custom color"
               >
+                <div className="absolute inset-0 rounded-full" style={{ backgroundColor: theme.bgColor }} />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Pencil className="w-3 h-3 text-foreground/60" />
+                </div>
                 <input
                   ref={colorInputRef}
                   type="color"
@@ -139,14 +219,14 @@ export default function BottomToolbar() {
           </div>
 
           {/* Patterns */}
-          <div className="mb-4">
-            <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">Patterns</label>
+          <div className="mb-5">
+            <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">Pattern</label>
             <div className="flex gap-2">
               {PATTERNS.map(p => (
                 <button
                   key={p.value}
                   onClick={() => updateTheme({ pattern: p.value })}
-                  className={`w-10 h-10 rounded-full border-2 text-base flex items-center justify-center transition-all ${
+                  className={`flex-1 h-10 rounded-full border-2 text-sm flex items-center justify-center transition-all ${
                     theme.pattern === p.value
                       ? 'bg-foreground text-background border-foreground'
                       : 'bg-card text-muted-foreground border-border hover:border-foreground/30'
@@ -158,8 +238,8 @@ export default function BottomToolbar() {
             </div>
           </div>
 
-          {/* Card Corners - buttons themselves are rounded to match */}
-          <div className="mb-4">
+          {/* Card Corners */}
+          <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">Corners</label>
             <div className="flex gap-2">
               {([
@@ -180,42 +260,6 @@ export default function BottomToolbar() {
                   {r.value}
                 </button>
               ))}
-            </div>
-          </div>
-
-          {/* Banner Toggle - Two button style */}
-          <div className="flex items-center justify-between py-2 border-t border-border">
-            <div>
-              <div className="text-xs font-medium text-foreground">Banner</div>
-              <div className="text-[10px] text-muted-foreground">Profile + Bio</div>
-            </div>
-            <div className="flex gap-1 bg-secondary rounded-lg p-1">
-              <button
-                onClick={() => setShowBanner(false)}
-                className={`relative w-10 h-10 rounded-md flex items-center justify-center transition-all duration-200 ${
-                  !showBanner
-                    ? 'bg-card shadow-sm scale-100'
-                    : 'hover:bg-card/50 scale-95 opacity-60'
-                }`}
-              >
-                <X className={`w-4 h-4 transition-colors ${!showBanner ? 'text-foreground' : 'text-muted-foreground'}`} />
-                {!showBanner && (
-                  <span className="absolute inset-0 rounded-md bg-primary/10 animate-pulse" />
-                )}
-              </button>
-              <button
-                onClick={() => setShowBanner(true)}
-                className={`relative w-10 h-10 rounded-md flex items-center justify-center transition-all duration-200 ${
-                  showBanner
-                    ? 'bg-card shadow-sm scale-100'
-                    : 'hover:bg-card/50 scale-95 opacity-60'
-                }`}
-              >
-                <User className={`w-4 h-4 transition-colors ${showBanner ? 'text-foreground' : 'text-muted-foreground'}`} />
-                {showBanner && (
-                  <span className="absolute inset-0 rounded-md bg-primary/10 animate-pulse" />
-                )}
-              </button>
             </div>
           </div>
         </div>
@@ -244,18 +288,18 @@ export default function BottomToolbar() {
         <div className="fixed inset-0 z-40" onClick={() => { setShowTheme(false); setShowAddBlock(false); }} />
       )}
 
-      {/* Toolbar - now only device toggle, url, add, theme */}
+      {/* Toolbar */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
         <div className="flex items-center gap-2 bg-card border rounded-full p-1.5 shadow-elevated">
           <button
             onClick={() => setPreviewMode('mobile')}
-            className={`p-2.5 rounded-full transition-colors ${previewMode === 'mobile' ? 'bg-foreground text-background' : 'hover:bg-secondary text-muted-foreground'}`}
+            className={`p-2.5 rounded-full transition-all ${previewMode === 'mobile' ? 'bg-foreground text-background' : 'hover:bg-secondary text-muted-foreground hover:scale-110'}`}
           >
             <Smartphone className="w-4 h-4" />
           </button>
           <button
             onClick={() => setPreviewMode('desktop')}
-            className={`p-2.5 rounded-full transition-colors ${previewMode === 'desktop' ? 'bg-foreground text-background' : 'hover:bg-secondary text-muted-foreground'}`}
+            className={`p-2.5 rounded-full transition-all ${previewMode === 'desktop' ? 'bg-foreground text-background' : 'hover:bg-secondary text-muted-foreground hover:scale-110'}`}
           >
             <Monitor className="w-4 h-4" />
           </button>
@@ -266,14 +310,14 @@ export default function BottomToolbar() {
         <div className="flex items-center gap-1 bg-card border rounded-full p-1.5 shadow-elevated">
           <button
             onClick={() => { setShowAddBlock(!showAddBlock); setShowTheme(false); }}
-            className={`p-2.5 rounded-full transition-colors ${showAddBlock ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary text-muted-foreground'}`}
+            className={`p-2.5 rounded-full transition-all ${showAddBlock ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary text-muted-foreground hover:scale-110'}`}
             title="Add block"
           >
             <Plus className="w-4 h-4" />
           </button>
           <button
             onClick={() => { setShowTheme(!showTheme); setShowAddBlock(false); }}
-            className={`p-2.5 rounded-full transition-colors ${showTheme ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary text-muted-foreground'}`}
+            className={`p-2.5 rounded-full transition-all ${showTheme ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary text-muted-foreground hover:scale-110'}`}
             title="Customize"
           >
             <Palette className="w-4 h-4" />
