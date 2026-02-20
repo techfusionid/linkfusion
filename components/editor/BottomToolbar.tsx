@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { useEditor, BlockType, LayoutPreset } from '@/app/editor/context';
 import {
-  Smartphone, Monitor, Palette, Plus, Link2, Type, ImagePlus, Heading1, X,
+  Smartphone, Monitor, Palette, Plus, Link2, Type, ImagePlus, Heading1, X, User,
 } from 'lucide-react';
 
 const BG_PRESETS_LIGHT = [
@@ -41,7 +41,7 @@ const ADD_BLOCK_OPTIONS: { type: BlockType; icon: typeof Plus; label: string }[]
 export default function BottomToolbar() {
   const {
     previewMode, setPreviewMode,
-    theme, updateTheme, addBlock, profile, layoutPreset, setLayoutPreset,
+    theme, updateTheme, addBlock, profile, layoutPreset, setLayoutPreset, showBanner, setShowBanner,
   } = useEditor();
 
   const [showTheme, setShowTheme] = useState(false);
@@ -159,7 +159,7 @@ export default function BottomToolbar() {
           </div>
 
           {/* Card Corners - buttons themselves are rounded to match */}
-          <div>
+          <div className="mb-4">
             <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">Corners</label>
             <div className="flex gap-2">
               {([
@@ -180,6 +180,42 @@ export default function BottomToolbar() {
                   {r.value}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Banner Toggle - Two button style */}
+          <div className="flex items-center justify-between py-2 border-t border-border">
+            <div>
+              <div className="text-xs font-medium text-foreground">Banner</div>
+              <div className="text-[10px] text-muted-foreground">Profile + Bio</div>
+            </div>
+            <div className="flex gap-1 bg-secondary rounded-lg p-1">
+              <button
+                onClick={() => setShowBanner(false)}
+                className={`relative w-10 h-10 rounded-md flex items-center justify-center transition-all duration-200 ${
+                  !showBanner
+                    ? 'bg-card shadow-sm scale-100'
+                    : 'hover:bg-card/50 scale-95 opacity-60'
+                }`}
+              >
+                <X className={`w-4 h-4 transition-colors ${!showBanner ? 'text-foreground' : 'text-muted-foreground'}`} />
+                {!showBanner && (
+                  <span className="absolute inset-0 rounded-md bg-primary/10 animate-pulse" />
+                )}
+              </button>
+              <button
+                onClick={() => setShowBanner(true)}
+                className={`relative w-10 h-10 rounded-md flex items-center justify-center transition-all duration-200 ${
+                  showBanner
+                    ? 'bg-card shadow-sm scale-100'
+                    : 'hover:bg-card/50 scale-95 opacity-60'
+                }`}
+              >
+                <User className={`w-4 h-4 transition-colors ${showBanner ? 'text-foreground' : 'text-muted-foreground'}`} />
+                {showBanner && (
+                  <span className="absolute inset-0 rounded-md bg-primary/10 animate-pulse" />
+                )}
+              </button>
             </div>
           </div>
         </div>

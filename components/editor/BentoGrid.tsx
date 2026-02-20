@@ -238,16 +238,16 @@ function AddBlockPlaceholder({ onAddBlock }: { onAddBlock: (type: BlockType) => 
   return (
     <div className="mt-3">
       {showOptions ? (
-        <div className="border-2 border-dashed border-primary/20 rounded-xl p-4 bg-card/50 backdrop-blur-sm">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 text-center">Choose block type</p>
+        <div className="border border-dashed border-primary/30 rounded-2xl p-4 bg-card/80 backdrop-blur-sm shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 text-center font-medium">Choose block type</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {ADD_BLOCK_OPTIONS.map(({ type, icon: Icon, label, desc }) => (
               <button
                 key={type}
                 onClick={() => { onAddBlock(type); setShowOptions(false); }}
-                className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border/50 bg-card hover:bg-secondary hover:border-primary/30 transition-all group"
+                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border/50 bg-card hover:bg-secondary hover:border-primary/30 transition-all duration-200 cursor-pointer active:scale-95 group"
               >
-                <Icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <Icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors duration-200" />
                 <span className="text-sm font-medium text-foreground">{label}</span>
                 <span className="text-[10px] text-muted-foreground">{desc}</span>
               </button>
@@ -255,7 +255,7 @@ function AddBlockPlaceholder({ onAddBlock }: { onAddBlock: (type: BlockType) => 
           </div>
           <button
             onClick={() => setShowOptions(false)}
-            className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+            className="w-full mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors py-2 cursor-pointer hover:bg-secondary/50 rounded-lg"
           >
             Cancel
           </button>
@@ -263,10 +263,12 @@ function AddBlockPlaceholder({ onAddBlock }: { onAddBlock: (type: BlockType) => 
       ) : (
         <button
           onClick={() => setShowOptions(true)}
-          className="w-full py-6 border-2 border-dashed border-border/60 rounded-xl text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card/50 transition-all flex flex-col items-center gap-2 group"
+          className="w-full py-5 border border-dashed border-border/40 rounded-2xl text-muted-foreground hover:text-foreground hover:border-primary/60 hover:bg-primary/5 hover:shadow-sm transition-all duration-300 ease-out flex flex-col items-center gap-2 group cursor-pointer active:scale-[0.98]"
         >
-          <Plus className="w-6 h-6 group-hover:scale-110 transition-transform" />
-          <span className="text-sm">Add a new bento block</span>
+          <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 group-hover:scale-110 transition-all duration-300">
+            <Plus className="w-5 h-5 text-primary/60 transition-transform duration-300 group-hover:rotate-90 group-hover:scale-110" />
+          </div>
+          <span className="text-sm font-medium">Add a new bento block</span>
         </button>
       )}
     </div>
@@ -311,6 +313,7 @@ export default function BentoGrid() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [editPopoverId, setEditPopoverId] = useState<string | null>(null);
+  const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const onLayoutChange = useCallback((newLayout: any[]) => {
     setLayout(newLayout.map((l: any) => ({ i: l.i, x: l.x, y: l.y, w: l.w, h: l.h, minW: 1, minH: 1 })));
@@ -323,6 +326,32 @@ export default function BentoGrid() {
     deleteBlock(blockId);
     setConfirmDeleteId(null);
     setHoveredBlock(null);
+  };
+
+  const handleBlockClick = (blockId: string, blockType: BlockType, blockUrl?: string) => {
+    if (clickTimeout) {
+      clearTimeout(clickTimeout);
+      setClickTimeout(null);
+      // Double click - enable editing
+      if (blockType === 'text' || blockType === 'heading') {
+        setEditingTextId(blockId);
+        setTimeout(() => {
+          const el = document.querySelector(`[data-block-id="${blockId}"] [contenteditable]`) as HTMLElement;
+          el?.focus();
+        }, 0);
+      }
+    } else {
+      // Single click - wait to see if it becomes a double click
+      const timeout = setTimeout(() => {
+        if (isEditing) {
+          selectBlock(blockId);
+        } else if (blockType === 'link') {
+          window.open(blockUrl || 'https://youtube.com', '_blank', 'noopener');
+        }
+        setClickTimeout(null);
+      }, 200);
+      setClickTimeout(timeout);
+    }
   };
 
   return (
@@ -351,14 +380,9 @@ export default function BentoGrid() {
           return (
             <div
               key={block.id}
+              data-block-id={block.id}
               className="relative group"
-              onClick={() => {
-                if (isEditing) {
-                  selectBlock(block.id);
-                } else if (block.type === 'link') {
-                  window.open(block.url || 'https://youtube.com', '_blank', 'noopener');
-                }
-              }}
+              onClick={() => handleBlockClick(block.id, block.type, block.url)}
               onMouseEnter={() => setHoveredBlock(block.id)}
               onMouseLeave={() => {
                 setHoveredBlock(null);
@@ -367,7 +391,9 @@ export default function BentoGrid() {
               }}
             >
               <div
-                className={`h-full w-full p-4 cursor-pointer transition-shadow overflow-hidden shadow-card ${
+                className={`h-full w-full p-4 transition-shadow overflow-hidden shadow-card ${
+                  isEditing ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+                } ${
                   isSelected
                     ? 'ring-2 ring-primary shadow-elevated'
                     : isEditing ? 'hover:ring-1 hover:ring-primary/40 hover:shadow-elevated' : ''
@@ -412,7 +438,7 @@ export default function BentoGrid() {
                 )}
                 {block.type === 'heading' && (
                   <div
-                    contentEditable={isEditing}
+                    contentEditable={isTextEditing}
                     suppressContentEditableWarning
                     className="h-full text-lg font-bold font-display outline-none flex items-center"
                     onBlur={(e) => updateBlock(block.id, { content: e.currentTarget.textContent || '' })}
@@ -460,7 +486,7 @@ export default function BentoGrid() {
               )}
 
               {/* Richtext toolbar when editing text block */}
-              {isEditing && isTextEditing && block.type === 'text' && (
+              {isTextEditing && block.type === 'text' && (
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-[70]">
                   <RichTextToolbar blockId={block.id} />
                 </div>
