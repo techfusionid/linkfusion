@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import ReactGridLayout, { WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { useEditor, BlockType } from "@/app/editor/context";
+import { useEditor, BlockType, BentoBlockData, LayoutItem } from "@/app/editor/context";
 import {
 	ExternalLink,
 	Image as ImageIcon,
@@ -100,40 +100,6 @@ function RichTextToolbar({ blockId }: { blockId: string }) {
 			>
 				<List className="w-3.5 h-3.5" />
 			</button>
-		</div>
-	);
-}
-
-// Delete confirmation popover
-function DeleteConfirm({
-	onConfirm,
-	onCancel,
-}: {
-	onConfirm: () => void;
-	onCancel: () => void;
-}) {
-	return (
-		<div
-			className="absolute top-8 right-0 bg-card border rounded-lg p-3 shadow-elevated z-[70] min-w-[160px]"
-			onClick={(e) => e.stopPropagation()}
-		>
-			<p className="text-xs text-foreground font-medium mb-2">
-				Delete this block?
-			</p>
-			<div className="flex gap-1.5">
-				<button
-					onClick={onCancel}
-					className="flex-1 px-2 py-1.5 text-xs rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-				>
-					Cancel
-				</button>
-				<button
-					onClick={onConfirm}
-					className="flex-1 px-2 py-1.5 text-xs rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
-				>
-					Delete
-				</button>
-			</div>
 		</div>
 	);
 }
@@ -421,6 +387,7 @@ export default function BentoGrid() {
 		blocks,
 		layout,
 		setLayout,
+		setBlocks,
 		selectBlock,
 		selectedBlockId,
 		updateBlock,
@@ -432,7 +399,6 @@ export default function BentoGrid() {
 		darkMode,
 	} = useEditor();
 	const [hoveredBlock, setHoveredBlock] = useState<string | null>(null);
-	const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 	const [editingTextId, setEditingTextId] = useState<string | null>(null);
 	const [editPopoverId, setEditPopoverId] = useState<string | null>(null);
 	const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -447,6 +413,12 @@ export default function BentoGrid() {
 
 	// Track which block has expanded presets (for small blocks)
 	const [expandedPresetsId, setExpandedPresetsId] = useState<string | null>(null);
+
+	// Track deleted block for undo functionality
+	const [deletedBlock, setDeletedBlock] = useState<{
+		block: BentoBlockData;
+		layout: LayoutItem;
+	} | null>(null);
 
 	const togglePresets = (blockId: string) => {
 		setExpandedPresetsId(expandedPresetsId === blockId ? null : blockId);
@@ -471,6 +443,16 @@ export default function BentoGrid() {
 			return () => document.removeEventListener("click", handleClickOutside);
 		}
 	}, [expandedPresetsId]);
+
+	// Auto-dismiss undo toast after 5 seconds
+	useEffect(() => {
+		if (deletedBlock) {
+			const timer = setTimeout(() => {
+				setDeletedBlock(null);
+			}, 5000);
+			return () => clearTimeout(timer);
+		}
+	}, [deletedBlock]);
 
 	const onLayoutChange = useCallback(
 		(newLayout: any[]) => {
@@ -498,9 +480,25 @@ export default function BentoGrid() {
 	const radius = radiusMap[theme.cardRadius] || "0.75rem";
 
 	const handleDelete = (blockId: string) => {
+		// Store deleted block for undo
+		const blockToDelete = blocks.find((b) => b.id === blockId);
+		const layoutToDelete = layout.find((l) => l.i === blockId);
+
+		if (blockToDelete && layoutToDelete) {
+			setDeletedBlock({ block: blockToDelete, layout: layoutToDelete });
+		}
+
 		deleteBlock(blockId);
-		setConfirmDeleteId(null);
 		setHoveredBlock(null);
+	};
+
+	const handleUndo = () => {
+		if (deletedBlock) {
+			// Restore the deleted block by adding it back
+			setBlocks([...blocks, deletedBlock.block]);
+			setLayout([...layout, deletedBlock.layout]);
+			setDeletedBlock(null);
+		}
 	};
 
 	const handleBlockClick = (
@@ -593,7 +591,6 @@ export default function BentoGrid() {
 								presetTimeoutRef.current = setTimeout(() => {
 									setPresetPortal(null);
 								}, 100);
-								setConfirmDeleteId(null);
 							}}
 						>
 							<div
@@ -716,19 +713,13 @@ export default function BentoGrid() {
 										<button
 											onClick={(e) => {
 												e.stopPropagation();
-												setConfirmDeleteId(block.id);
+												handleDelete(block.id);
 											}}
-											className="w-8 h-8 rounded-full bg-card border shadow-elevated hover:bg-secondary hover:border-border transition-colors flex items-center justify-center"
+											className="w-8 h-8 rounded-full bg-card border shadow-elevated hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-colors flex items-center justify-center"
 											title="Delete block"
 										>
 											<X className="w-3.5 h-3.5 text-muted-foreground" />
 										</button>
-										{confirmDeleteId === block.id && (
-											<DeleteConfirm
-												onConfirm={() => handleDelete(block.id)}
-												onCancel={() => setConfirmDeleteId(null)}
-											/>
-										)}
 									</div>
 								</>
 							)}
@@ -824,6 +815,24 @@ export default function BentoGrid() {
 								})}
 							</div>
 						)}
+					</div>,
+					document.body,
+				)}
+
+			{/* Undo toast - shows when block is deleted */}
+			{deletedBlock &&
+				createPortal(
+					<div
+						className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-foreground text-background px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50 animate-in slide-in-from-bottom-2 fade-in duration-200"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<span className="text-sm">Block deleted</span>
+						<button
+							onClick={handleUndo}
+							className="text-sm font-medium underline hover:text-primary/80 transition-colors"
+						>
+							Undo
+						</button>
 					</div>,
 					document.body,
 				)}

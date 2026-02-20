@@ -66,6 +66,7 @@ interface EditorContextType {
 	deleteBlock: (id: string) => void;
 	resizeBlock: (id: string, w: number, h: number) => void;
 	setLayout: (layout: LayoutItem[]) => void;
+	setBlocks: (blocks: BentoBlockData[]) => void;
 	selectBlock: (id: string | null) => void;
 	updateProfile: (updates: Partial<ProfileData>) => void;
 	updateTheme: (updates: Partial<ThemeConfig>) => void;
@@ -323,6 +324,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 				deleteBlock: draftAwareDeleteBlock,
 				resizeBlock,
 				setLayout: draftAwareSetLayout,
+				setBlocks,
 				selectBlock,
 				updateProfile: draftAwareUpdateProfile,
 				updateTheme,
