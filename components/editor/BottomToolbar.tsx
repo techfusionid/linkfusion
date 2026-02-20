@@ -290,37 +290,37 @@ export default function BottomToolbar() {
 
       {/* Toolbar */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
-        <div className="flex items-center gap-2 bg-card border rounded-full p-1.5 shadow-elevated">
+        <div className="flex items-center gap-2 bg-card border rounded-full p-2 shadow-elevated">
           <button
             onClick={() => setPreviewMode('mobile')}
-            className={`p-2.5 rounded-full transition-all ${previewMode === 'mobile' ? 'bg-foreground text-background' : 'hover:bg-secondary text-muted-foreground hover:scale-110'}`}
+            className={`p-3 rounded-full transition-all hover:scale-110 ${previewMode === 'mobile' ? 'bg-foreground text-background' : 'hover:bg-secondary text-muted-foreground'}`}
           >
-            <Smartphone className="w-4 h-4" />
+            <Smartphone className="w-4.5 h-4.5" />
           </button>
           <button
             onClick={() => setPreviewMode('desktop')}
-            className={`p-2.5 rounded-full transition-all ${previewMode === 'desktop' ? 'bg-foreground text-background' : 'hover:bg-secondary text-muted-foreground hover:scale-110'}`}
+            className={`p-3 rounded-full transition-all hover:scale-110 ${previewMode === 'desktop' ? 'bg-foreground text-background' : 'hover:bg-secondary text-muted-foreground'}`}
           >
-            <Monitor className="w-4 h-4" />
+            <Monitor className="w-4.5 h-4.5" />
           </button>
           <div className="h-5 w-px bg-border mx-1" />
           <span className="text-xs text-muted-foreground pr-3 select-none">linkfusion.app/{profile.username}</span>
         </div>
 
-        <div className="flex items-center gap-1 bg-card border rounded-full p-1.5 shadow-elevated">
+        <div className="flex items-center gap-1 bg-card border rounded-full p-2 shadow-elevated">
           <button
             onClick={() => { setShowAddBlock(!showAddBlock); setShowTheme(false); }}
-            className={`p-2.5 rounded-full transition-all ${showAddBlock ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary text-muted-foreground hover:scale-110'}`}
+            className={`p-3 rounded-full transition-all hover:scale-110 ${showAddBlock ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary text-muted-foreground'}`}
             title="Add block"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4.5 h-4.5" />
           </button>
           <button
             onClick={() => { setShowTheme(!showTheme); setShowAddBlock(false); }}
-            className={`p-2.5 rounded-full transition-all ${showTheme ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary text-muted-foreground hover:scale-110'}`}
+            className={`p-3 rounded-full transition-all hover:scale-110 ${showTheme ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary text-muted-foreground'}`}
             title="Customize"
           >
-            <Palette className="w-4 h-4" />
+            <Palette className="w-4.5 h-4.5" />
           </button>
         </div>
       </div>

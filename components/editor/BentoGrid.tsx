@@ -445,6 +445,33 @@ export default function BentoGrid() {
 	} | null>(null);
 	const presetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+	// Track which block has expanded presets (for small blocks)
+	const [expandedPresetsId, setExpandedPresetsId] = useState<string | null>(null);
+
+	const togglePresets = (blockId: string) => {
+		setExpandedPresetsId(expandedPresetsId === blockId ? null : blockId);
+	};
+
+	// Check if block is small (1x1)
+	const isSmallBlock = (blockId: string) => {
+		const layoutItem = layout.find((l) => l.i === blockId);
+		return layoutItem && layoutItem.w === 1 && layoutItem.h === 1;
+	};
+
+	// Close expanded presets when clicking outside
+	useEffect(() => {
+		const handleClickOutside = () => {
+			if (expandedPresetsId) {
+				setExpandedPresetsId(null);
+			}
+		};
+
+		if (expandedPresetsId) {
+			document.addEventListener("click", handleClickOutside);
+			return () => document.removeEventListener("click", handleClickOutside);
+		}
+	}, [expandedPresetsId]);
+
 	const onLayoutChange = useCallback(
 		(newLayout: any[]) => {
 			setLayout(
@@ -724,7 +751,7 @@ export default function BentoGrid() {
 			{presetPortal &&
 				createPortal(
 					<div
-						className="fixed flex gap-1 rounded-lg px-1.5 py-1 shadow-elevated z-[99999] bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800/50"
+						className="fixed shadow-elevated z-[99999] bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800/50 rounded-lg"
 						style={{
 							top: `${presetPortal.rect.bottom - 20}px`,
 							left: `${presetPortal.rect.left + presetPortal.rect.width / 2}px`,
@@ -740,41 +767,63 @@ export default function BentoGrid() {
 						}}
 						onMouseLeave={() => {
 							setHoveredBlock(null);
-							setPresetPortal(null);
+							// Don't clear presetPortal immediately for expanded state
+							if (expandedPresetsId !== presetPortal.blockId) {
+								setPresetPortal(null);
+							}
 						}}
+						onClick={(e) => e.stopPropagation()}
 					>
-						{SIZE_PRESETS.map((preset) => {
-							const isActive =
-								presetPortal.currentLayout &&
-								presetPortal.currentLayout.w === preset.w &&
-								presetPortal.currentLayout.h === preset.h;
+						{isSmallBlock(presetPortal.blockId) && expandedPresetsId !== presetPortal.blockId ? (
+							// Small block: Show "+" button
+							<button
+								onClick={() => togglePresets(presetPortal.blockId)}
+								className="w-8 h-8 flex items-center justify-center text-white hover:bg-zinc-800/50 transition-colors rounded-lg"
+								title="Change size"
+							>
+								<Plus className="w-4 h-4" />
+							</button>
+						) : (
+							// Large block OR expanded small block: Show all presets
+							<div className="flex gap-1 rounded-lg px-1.5 py-1">
+								{SIZE_PRESETS.map((preset) => {
+									const isActive =
+										presetPortal.currentLayout &&
+										presetPortal.currentLayout.w === preset.w &&
+										presetPortal.currentLayout.h === preset.h;
 
-							return (
-								<button
-									key={`${preset.w}x${preset.h}`}
-									onClick={(e) => {
-										e.stopPropagation();
-										resizeBlock(presetPortal.blockId, preset.w, preset.h);
-									}}
-									className={`w-8 h-8 flex items-center justify-center transition-all duration-200 ${
-										isActive
-											? "bg-white shadow-md scale-110 rounded-sm"
-											: "rounded-lg hover:bg-zinc-700/50"
-									}`}
-								>
-									{/* Outline shape - proportional to preset size */}
-									<div
-										className={`border-2 rounded-[1px] ${
-											isActive ? "border-zinc-900" : "border-white"
-										}`}
-										style={{
-											width: `${preset.w * 6}px`,
-											height: `${preset.h * 6}px`,
-										}}
-									/>
-								</button>
-							);
-						})}
+									return (
+										<button
+											key={`${preset.w}x${preset.h}`}
+											onClick={(e) => {
+												e.stopPropagation();
+												resizeBlock(presetPortal.blockId, preset.w, preset.h);
+												// Close expanded state after selecting a size
+												if (expandedPresetsId === presetPortal.blockId) {
+													setExpandedPresetsId(null);
+												}
+											}}
+											className={`w-8 h-8 flex items-center justify-center transition-all duration-200 ${
+												isActive
+													? "bg-white shadow-md scale-110 rounded-sm"
+													: "rounded-lg hover:bg-zinc-700/50"
+											}`}
+										>
+											{/* Outline shape - proportional to preset size */}
+											<div
+												className={`border-2 rounded-[1px] ${
+													isActive ? "border-zinc-900" : "border-white"
+												}`}
+												style={{
+													width: `${preset.w * 6}px`,
+													height: `${preset.h * 6}px`,
+												}}
+											/>
+										</button>
+									);
+								})}
+							</div>
+						)}
 					</div>,
 					document.body,
 				)}

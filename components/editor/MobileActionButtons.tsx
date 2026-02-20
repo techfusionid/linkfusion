@@ -84,7 +84,7 @@ export default function MobileActionButtons({ username = 'username' }: MobileAct
         <div className="flex gap-3">
           <button
             onClick={handleCopy}
-            className="flex-1 h-14 rounded-xl bg-primary text-primary-foreground shadow-elevated flex items-center justify-center gap-2 hover:bg-primary/90 transition-all font-medium relative overflow-hidden"
+            className="flex-1 h-14 px-5 rounded-xl bg-primary text-primary-foreground shadow-elevated flex items-center justify-center gap-2 hover:bg-primary/90 transition-all font-medium relative overflow-hidden"
           >
             {copied ? (
               <>
@@ -100,7 +100,7 @@ export default function MobileActionButtons({ username = 'username' }: MobileAct
           </button>
           <button
             onClick={() => setQrOpen(true)}
-            className="flex-1 h-14 rounded-xl bg-card border border-border shadow-elevated flex items-center justify-center gap-2 hover:bg-secondary transition-all font-medium"
+            className="flex-1 h-14 px-5 rounded-xl bg-card border border-border shadow-elevated flex items-center justify-center gap-2 hover:bg-secondary transition-all font-medium"
           >
             <QrCode className="w-5 h-5" />
             <span>QR</span>
