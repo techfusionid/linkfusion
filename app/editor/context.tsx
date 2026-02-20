@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 
 export type BlockType = 'link' | 'text' | 'image' | 'heading';
 
@@ -28,6 +28,7 @@ export interface ThemeConfig {
   accentColor: string;
   cardRadius: 'sm' | 'md' | 'lg' | 'xl';
   showBanner: boolean;
+  darkMode: boolean;
 }
 
 export interface LayoutItem {
@@ -50,6 +51,7 @@ interface EditorContextType {
   isEditing: boolean;
   layoutPreset: LayoutPreset;
   showBanner: boolean;
+  darkMode: boolean;
   isDraftMode: boolean;
   hasUnpublishedChanges: boolean;
   addBlock: (type: BlockType) => void;
@@ -64,6 +66,7 @@ interface EditorContextType {
   setIsEditing: (editing: boolean) => void;
   setLayoutPreset: (preset: LayoutPreset) => void;
   setShowBanner: (show: boolean) => void;
+  setDarkMode: (dark: boolean) => void;
   enableDraftMode: () => void;
   publishDraft: () => void;
   discardDraft: () => void;
@@ -99,6 +102,7 @@ const initialTheme: ThemeConfig = {
   accentColor: '#14b8a6',
   cardRadius: 'lg',
   showBanner: true,
+  darkMode: false,
 };
 
 export const EditorContext = createContext<EditorContextType | null>(null);
@@ -141,6 +145,21 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     setTheme(prev => ({ ...prev, showBanner: show }));
     if (isDraftMode) setHasUnpublishedChanges(true);
   }, [isDraftMode]);
+
+  const setDarkMode = useCallback((dark: boolean) => {
+    setTheme(prev => ({ ...prev, darkMode: dark }));
+    if (isDraftMode) setHasUnpublishedChanges(true);
+  }, [isDraftMode]);
+
+  // Apply dark mode class to document element
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme.darkMode) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme.darkMode]);
 
   const draftAwareAddBlock = useCallback((type: BlockType) => {
     const id = `b${Date.now()}`;
@@ -204,7 +223,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   return (
     <EditorContext.Provider value={{
-      blocks, layout, selectedBlockId, profile, theme, previewMode, isEditing, layoutPreset, showBanner: theme.showBanner,
+      blocks, layout, selectedBlockId, profile, theme, previewMode, isEditing, layoutPreset, showBanner: theme.showBanner, darkMode: theme.darkMode,
       isDraftMode, hasUnpublishedChanges,
       addBlock: draftAwareAddBlock,
       updateBlock: draftAwareUpdateBlock,
@@ -214,7 +233,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       selectBlock,
       updateProfile: draftAwareUpdateProfile,
       updateTheme,
-      setPreviewMode, setIsEditing, setLayoutPreset, setShowBanner,
+      setPreviewMode, setIsEditing, setLayoutPreset, setShowBanner, setDarkMode,
       enableDraftMode, publishDraft, discardDraft,
     }}>
       {children}

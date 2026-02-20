@@ -28,8 +28,9 @@ function EditorNavbar() {
 }
 
 function EditorCanvas() {
-  const { previewMode, theme, selectBlock, showBanner, profile } = useEditor();
+  const { previewMode, theme, selectBlock, showBanner, profile, layoutPreset } = useEditor();
   const patternStyle = getPatternStyle(theme.pattern, theme.bgColor);
+  const isBento = layoutPreset === 'bento';
 
   return (
     <div className="flex flex-col min-h-screen w-full">
@@ -41,7 +42,7 @@ function EditorCanvas() {
         onClick={(e) => { if (e.target === e.currentTarget) selectBlock(null); }}
       >
         {previewMode === 'mobile' ? (
-          // Mobile preview: Phone mock with action buttons
+          // Mobile preview: Phone mock with action buttons (always vertical layout)
           <div className="flex items-center justify-center gap-8">
             <PhoneMock>
               {showBanner && (
@@ -56,14 +57,33 @@ function EditorCanvas() {
             <MobileActionButtons username={profile.username} />
           </div>
         ) : (
-          // Desktop preview: Centered content
-          <div className="w-full max-w-[680px]">
-            {showBanner && (
-              <div className="mb-4">
-                <ProfileSection />
+          // Desktop preview
+          <div className="w-full">
+            {isBento ? (
+              // Bento layout: Constrained width with top margin
+              <div className="flex gap-8 items-start justify-center max-w-[1280px] mx-auto mt-8 px-4">
+                {/* Left sidebar - Profile */}
+                {showBanner && (
+                  <div className="w-80 shrink-0">
+                    <ProfileSection variant="bento" />
+                  </div>
+                )}
+                {/* Right side - Bento Grid */}
+                <div className="flex-1 min-w-0">
+                  <BentoGrid />
+                </div>
+              </div>
+            ) : (
+              // Classic layout: Stacked vertically
+              <div className="max-w-[680px] mx-auto">
+                {showBanner && (
+                  <div className="mb-4">
+                    <ProfileSection variant="classic" />
+                  </div>
+                )}
+                <BentoGrid />
               </div>
             )}
-            <BentoGrid />
           </div>
         )}
       </div>
