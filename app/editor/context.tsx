@@ -27,6 +27,7 @@ export interface ThemeConfig {
   pattern: 'none' | 'dots' | 'grid' | 'lines';
   accentColor: string;
   cardRadius: 'sm' | 'md' | 'lg' | 'xl';
+  showBanner: boolean;
 }
 
 export interface LayoutItem {
@@ -48,6 +49,7 @@ interface EditorContextType {
   previewMode: 'desktop' | 'mobile';
   isEditing: boolean;
   layoutPreset: LayoutPreset;
+  showBanner: boolean;
   isDraftMode: boolean;
   hasUnpublishedChanges: boolean;
   addBlock: (type: BlockType) => void;
@@ -61,6 +63,7 @@ interface EditorContextType {
   setPreviewMode: (mode: 'desktop' | 'mobile') => void;
   setIsEditing: (editing: boolean) => void;
   setLayoutPreset: (preset: LayoutPreset) => void;
+  setShowBanner: (show: boolean) => void;
   enableDraftMode: () => void;
   publishDraft: () => void;
   discardDraft: () => void;
@@ -95,6 +98,7 @@ const initialTheme: ThemeConfig = {
   pattern: 'dots',
   accentColor: '#14b8a6',
   cardRadius: 'lg',
+  showBanner: true,
 };
 
 export const EditorContext = createContext<EditorContextType | null>(null);
@@ -130,6 +134,11 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const updateTheme = useCallback((updates: Partial<ThemeConfig>) => {
     setTheme(prev => ({ ...prev, ...updates }));
+    if (isDraftMode) setHasUnpublishedChanges(true);
+  }, [isDraftMode]);
+
+  const setShowBanner = useCallback((show: boolean) => {
+    setTheme(prev => ({ ...prev, showBanner: show }));
     if (isDraftMode) setHasUnpublishedChanges(true);
   }, [isDraftMode]);
 
@@ -195,7 +204,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   return (
     <EditorContext.Provider value={{
-      blocks, layout, selectedBlockId, profile, theme, previewMode, isEditing, layoutPreset,
+      blocks, layout, selectedBlockId, profile, theme, previewMode, isEditing, layoutPreset, showBanner: theme.showBanner,
       isDraftMode, hasUnpublishedChanges,
       addBlock: draftAwareAddBlock,
       updateBlock: draftAwareUpdateBlock,
@@ -205,7 +214,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       selectBlock,
       updateProfile: draftAwareUpdateProfile,
       updateTheme,
-      setPreviewMode, setIsEditing, setLayoutPreset,
+      setPreviewMode, setIsEditing, setLayoutPreset, setShowBanner,
       enableDraftMode, publishDraft, discardDraft,
     }}>
       {children}

@@ -5,6 +5,8 @@ import BentoGrid from '@/components/editor/BentoGrid';
 import ProfileSection from '@/components/editor/ProfileSection';
 import BottomToolbar from '@/components/editor/BottomToolbar';
 import Navbar from '@/components/editor/Navbar';
+import PhoneMock from '@/components/editor/PhoneMock';
+import MobileActionButtons from '@/components/editor/MobileActionButtons';
 
 function getPatternStyle(pattern: string, bgColor: string): React.CSSProperties {
   const bg = bgColor || '#f8fafc';
@@ -26,9 +28,8 @@ function EditorNavbar() {
 }
 
 function EditorCanvas() {
-  const { previewMode, theme, selectBlock, layoutPreset } = useEditor();
+  const { previewMode, theme, selectBlock, showBanner, profile } = useEditor();
   const patternStyle = getPatternStyle(theme.pattern, theme.bgColor);
-  const isClassic = layoutPreset === 'classic';
 
   return (
     <div className="flex flex-col min-h-screen w-full">
@@ -39,28 +40,30 @@ function EditorCanvas() {
         style={patternStyle}
         onClick={(e) => { if (e.target === e.currentTarget) selectBlock(null); }}
       >
-        {isClassic ? (
-          <div className={`w-full transition-all duration-300 ${previewMode === 'mobile' ? 'max-w-[390px]' : 'max-w-[680px]'}`}>
-            <ProfileSection />
-            <BentoGrid />
-          </div>
-        ) : (
-          <div className={`w-full transition-all duration-300 ${previewMode === 'mobile' ? 'max-w-[390px]' : 'max-w-[960px]'}`}>
-            {previewMode === 'mobile' ? (
-              <>
-                <ProfileSection />
-                <BentoGrid />
-              </>
-            ) : (
-              <div className="flex gap-8 items-start">
-                <div className="w-[260px] shrink-0 sticky top-4">
+        {previewMode === 'mobile' ? (
+          // Mobile preview: Phone mock with action buttons
+          <div className="flex items-center justify-center gap-8">
+            <PhoneMock>
+              {showBanner && (
+                <div className="px-4 pt-8 pb-2">
                   <ProfileSection />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <BentoGrid />
-                </div>
+              )}
+              <div className={showBanner ? 'px-4 pb-4' : 'px-4 pt-6 pb-4'}>
+                <BentoGrid />
+              </div>
+            </PhoneMock>
+            <MobileActionButtons username={profile.username} />
+          </div>
+        ) : (
+          // Desktop preview: Centered content
+          <div className="w-full max-w-[680px]">
+            {showBanner && (
+              <div className="mb-4">
+                <ProfileSection />
               </div>
             )}
+            <BentoGrid />
           </div>
         )}
       </div>
