@@ -7,6 +7,8 @@ import BottomToolbar from '@/components/editor/BottomToolbar';
 import Navbar from '@/components/editor/Navbar';
 import PhoneMock from '@/components/editor/PhoneMock';
 import MobileActionButtons from '@/components/editor/MobileActionButtons';
+import CustomizeSidebar from '@/components/editor/CustomizeSidebar';
+import SettingsDialog from '@/components/editor/SettingsDialog';
 
 function getPatternStyle(pattern: string, bgColor: string): React.CSSProperties {
   const bg = bgColor || '#f8fafc';
@@ -34,61 +36,74 @@ function EditorCanvas() {
 
   return (
     <div className={`flex flex-col min-h-screen w-full transition-colors ${darkMode ? 'dark' : ''}`}>
-      <EditorNavbar />
+      {/* Main content area with flex to accommodate sidebar */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left side - Navbar + Canvas */}
+        <div className="flex flex-col flex-1 overflow-hidden transition-all duration-300">
+          <EditorNavbar />
 
-      <div
-        className="flex-1 overflow-auto flex justify-center px-4 pb-24 pt-4 md:px-8 transition-colors"
-        style={patternStyle}
-        onClick={(e) => { if (e.target === e.currentTarget) selectBlock(null); }}
-      >
-        {previewMode === 'mobile' ? (
-          // Mobile preview: Phone mock with action buttons (always vertical layout)
-          <div className="flex items-center justify-center gap-8">
-            <PhoneMock>
-              {showBanner && (
-                <div className="px-4 pt-8 pb-2">
-                  <ProfileSection />
-                </div>
-              )}
-              <div className={showBanner ? 'px-4 pb-4' : 'px-4 pt-6 pb-4'}>
-                <BentoGrid />
-              </div>
-            </PhoneMock>
-            <MobileActionButtons username={profile.username} />
-          </div>
-        ) : (
-          // Desktop preview
-          <div className="w-full">
-            {isBento ? (
-              // Bento layout: Constrained width with top margin
-              <div className="flex gap-8 items-start justify-center max-w-[1280px] mx-auto mt-8 px-4">
-                {/* Left sidebar - Profile */}
-                {showBanner && (
-                  <div className="w-80 shrink-0">
-                    <ProfileSection variant="bento" />
+          {/* Canvas area - takes remaining space */}
+          <div
+            className="flex-1 overflow-auto flex justify-center px-4 pb-24 pt-4 md:px-8 transition-colors"
+            style={patternStyle}
+            onClick={(e) => { if (e.target === e.currentTarget) selectBlock(null); }}
+          >
+            {previewMode === 'mobile' ? (
+              // Mobile preview: Phone mock with action buttons (always vertical layout)
+              <div className="flex items-center justify-center gap-8">
+                <PhoneMock>
+                  {showBanner && (
+                    <div className="px-4 pt-8 pb-2">
+                      <ProfileSection />
+                    </div>
+                  )}
+                  <div className={showBanner ? 'px-4 pb-4' : 'px-4 pt-6 pb-4'}>
+                    <BentoGrid />
                   </div>
-                )}
-                {/* Right side - Bento Grid */}
-                <div className="flex-1 min-w-0">
-                  <BentoGrid />
-                </div>
+                </PhoneMock>
+                <MobileActionButtons username={profile.username} />
               </div>
             ) : (
-              // Classic layout: Stacked vertically
-              <div className="max-w-[680px] mx-auto">
-                {showBanner && (
-                  <div className="mb-4">
-                    <ProfileSection variant="classic" />
+              // Desktop preview
+              <div className="w-full">
+                {isBento ? (
+                  // Bento layout: Constrained width with top margin
+                  <div className="flex gap-8 items-start justify-center max-w-[1280px] mx-auto mt-8 px-4">
+                    {/* Left sidebar - Profile */}
+                    {showBanner && (
+                      <div className="w-80 shrink-0">
+                        <ProfileSection variant="bento" />
+                      </div>
+                    )}
+                    {/* Right side - Bento Grid */}
+                    <div className="flex-1 min-w-0">
+                      <BentoGrid />
+                    </div>
+                  </div>
+                ) : (
+                  // Classic layout: Stacked vertically
+                  <div className="max-w-[680px] mx-auto">
+                    {showBanner && (
+                      <div className="mb-4">
+                        <ProfileSection variant="classic" />
+                      </div>
+                    )}
+                    <BentoGrid />
                   </div>
                 )}
-                <BentoGrid />
               </div>
             )}
           </div>
-        )}
+        </div>
+
+        {/* Customize sidebar - pushes content when open */}
+        <CustomizeSidebar />
       </div>
 
       <BottomToolbar />
+
+      {/* Settings Dialog - full popup overlay */}
+      <SettingsDialog />
     </div>
   );
 }

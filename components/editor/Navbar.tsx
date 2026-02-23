@@ -1,6 +1,6 @@
 'use client';
 
-import { Pencil, Eye, BarChart3, Share2, Settings, LogOut } from 'lucide-react';
+import { Pencil, Eye, BarChart3, Share2, Settings, LogOut, Palette, Settings2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEditor } from '@/app/editor/context';
 import {
@@ -18,7 +18,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ isEditing, onToggleEdit }: NavbarProps) {
-  const { profile } = useEditor();
+  const { profile, showCustomizeSidebar, setShowCustomizeSidebar, showSettingsSidebar, setShowSettingsSidebar } = useEditor();
 
   return (
     <header className="h-12 flex items-center justify-between px-4 md:px-6 shrink-0 bg-card/80 backdrop-blur-sm border-b relative z-50">
@@ -27,18 +27,39 @@ export default function Navbar({ isEditing, onToggleEdit }: NavbarProps) {
       </h1>
 
       <div className="flex items-center gap-1.5">
-        {/* Edit / Preview toggle */}
-        {onToggleEdit && (
+          {/* Edit / Preview toggle */}
+          {onToggleEdit && (
+            <Button
+              onClick={onToggleEdit}
+              variant={isEditing ? 'default' : 'outline'}
+              size="sm"
+              className="h-8 text-xs"
+            >
+              {isEditing ? <Pencil className="w-3.5 h-3.5 mr-1.5" /> : <Eye className="w-3.5 h-3.5 mr-1.5" />}
+              {isEditing ? 'Editing' : 'Preview'}
+            </Button>
+          )}
+
+          {/* Settings button */}
           <Button
-            onClick={onToggleEdit}
-            variant={isEditing ? 'default' : 'outline'}
+            onClick={() => setShowSettingsSidebar(!showSettingsSidebar)}
+            variant={showSettingsSidebar ? 'secondary' : 'ghost'}
+            size="icon"
+            className="h-8 w-8"
+          >
+            <Settings2 className="w-4 h-4" />
+          </Button>
+
+          {/* Customize button */}
+          <Button
+            onClick={() => setShowCustomizeSidebar(!showCustomizeSidebar)}
+            variant="ghost"
             size="sm"
             className="h-8 text-xs"
           >
-            {isEditing ? <Pencil className="w-3.5 h-3.5 mr-1.5" /> : <Eye className="w-3.5 h-3.5 mr-1.5" />}
-            {isEditing ? 'Editing' : 'Preview'}
+            <Palette className="w-3.5 h-3.5 mr-1.5" />
+            Customize
           </Button>
-        )}
 
         <Link href="/analytics" className="p-2 rounded-lg hover:bg-secondary text-muted-foreground transition-colors" title="Analytics">
           <BarChart3 className="w-4 h-4" />

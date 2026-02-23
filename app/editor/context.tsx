@@ -38,6 +38,27 @@ export interface ThemeConfig {
 	darkMode: boolean;
 }
 
+export interface CustomizeSettings {
+	font: string;
+	background: string;
+	buttonBackground: string;
+	buttonText: string;
+	pageWidth: number;
+	baseFontSize: number;
+	logoWidth: number;
+	logoHeight: number;
+	logoCornerRadius: number;
+	inputWidth: number;
+	inputHeight: number;
+	inputBackground: string;
+	inputPlaceholder: string;
+	inputBorderRadius: number;
+	inputMarginBottom: number;
+	buttonWidth: number;
+	buttonHorizontalPadding: number;
+	buttonHeight: number;
+}
+
 export interface LayoutItem {
 	i: string;
 	x: number;
@@ -54,6 +75,9 @@ interface EditorContextType {
 	selectedBlockId: string | null;
 	profile: ProfileData;
 	theme: ThemeConfig;
+	customizeSettings: CustomizeSettings;
+	showCustomizeSidebar: boolean;
+	showSettingsSidebar: boolean;
 	previewMode: "desktop" | "mobile";
 	isEditing: boolean;
 	layoutPreset: LayoutPreset;
@@ -70,6 +94,9 @@ interface EditorContextType {
 	selectBlock: (id: string | null) => void;
 	updateProfile: (updates: Partial<ProfileData>) => void;
 	updateTheme: (updates: Partial<ThemeConfig>) => void;
+	updateCustomizeSettings: (updates: Partial<CustomizeSettings>) => void;
+	setShowCustomizeSidebar: (show: boolean) => void;
+	setShowSettingsSidebar: (show: boolean) => void;
 	setPreviewMode: (mode: "desktop" | "mobile") => void;
 	setIsEditing: (editing: boolean) => void;
 	setLayoutPreset: (preset: LayoutPreset) => void;
@@ -142,6 +169,27 @@ const initialTheme: ThemeConfig = {
 	darkMode: false,
 };
 
+const initialCustomizeSettings: CustomizeSettings = {
+	font: "Inter",
+	background: "#ffffff",
+	buttonBackground: "#14b8a6",
+	buttonText: "#ffffff",
+	pageWidth: 700,
+	baseFontSize: 16,
+	logoWidth: 100,
+	logoHeight: 100,
+	logoCornerRadius: 25,
+	inputWidth: 200,
+	inputHeight: 36,
+	inputBackground: "#ffffff",
+	inputPlaceholder: "#9ca3af",
+	inputBorderRadius: 8,
+	inputMarginBottom: 10,
+	buttonWidth: 200,
+	buttonHorizontalPadding: 16,
+	buttonHeight: 44,
+};
+
 export const EditorContext = createContext<EditorContextType | null>(null);
 
 export function EditorProvider({ children }: { children: ReactNode }) {
@@ -150,6 +198,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 	const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
 	const [profile, setProfile] = useState(initialProfile);
 	const [theme, setTheme] = useState(initialTheme);
+	const [customizeSettings, setCustomizeSettings] = useState(initialCustomizeSettings);
+	const [showCustomizeSidebar, setShowCustomizeSidebar] = useState(false);
+	const [showSettingsSidebar, setShowSettingsSidebar] = useState(false);
 	const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">(
 		"desktop",
 	);
@@ -180,6 +231,14 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 	const updateTheme = useCallback(
 		(updates: Partial<ThemeConfig>) => {
 			setTheme((prev) => ({ ...prev, ...updates }));
+			if (isDraftMode) setHasUnpublishedChanges(true);
+		},
+		[isDraftMode],
+	);
+
+	const updateCustomizeSettings = useCallback(
+		(updates: Partial<CustomizeSettings>) => {
+			setCustomizeSettings((prev) => ({ ...prev, ...updates }));
 			if (isDraftMode) setHasUnpublishedChanges(true);
 		},
 		[isDraftMode],
@@ -312,6 +371,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 				selectedBlockId,
 				profile,
 				theme,
+				customizeSettings,
+				showCustomizeSidebar,
+				showSettingsSidebar,
 				previewMode,
 				isEditing,
 				layoutPreset,
@@ -328,6 +390,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 				selectBlock,
 				updateProfile: draftAwareUpdateProfile,
 				updateTheme,
+				updateCustomizeSettings,
+				setShowCustomizeSidebar,
+				setShowSettingsSidebar,
 				setPreviewMode,
 				setIsEditing,
 				setLayoutPreset,
