@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import ReactGridLayout, { WidthProvider } from "react-grid-layout/legacy";
+import ReactGridLayout, { WidthProvider, Layout } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { useEditor, BlockType, BentoBlockData, LayoutItem } from "@/app/editor/context";
@@ -455,9 +455,9 @@ export default function BentoGrid() {
 	}, [deletedBlock]);
 
 	const onLayoutChange = useCallback(
-		(newLayout: any[]) => {
+		(newLayout: Layout) => {
 			setLayout(
-				newLayout.map((l: any) => ({
+				newLayout.map((l) => ({
 					i: l.i,
 					x: l.x,
 					y: l.y,
